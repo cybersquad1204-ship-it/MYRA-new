@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.Myra" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#00000000</item>
+        <item name="android:navigationBarColor">#050505</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

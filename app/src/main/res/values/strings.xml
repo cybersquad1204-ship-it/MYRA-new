@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MYRA</string>
+    <string name="accessibility_description">MYRA Assistant accessibility service to control apps and execute system commands.</string>
+</resources>
