@@ -24,12 +24,17 @@ class MyraApplication : Application() {
                     putExtra("crash_trace", trace)
                 }
                 startActivity(intent)
+
+                // Give the new activity time to actually launch before killing this process
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    Process.killProcess(Process.myPid())
+                    exitProcess(1)
+                }, 1000)
             } catch (e: Exception) {
-                // If even the crash screen fails, fall back to default behaviour
                 defaultHandler?.uncaughtException(thread, throwable)
+                Process.killProcess(Process.myPid())
+                exitProcess(1)
             }
-            Process.killProcess(Process.myPid())
-            exitProcess(1)
         }
     }
 }
