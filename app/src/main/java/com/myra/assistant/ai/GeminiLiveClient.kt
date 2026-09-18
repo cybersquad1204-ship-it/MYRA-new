@@ -81,20 +81,20 @@ class GeminiLiveClient(
         val setupJson = JSONObject().apply {
             val setup = JSONObject().apply {
                 put("model", model)
-                put("system_instruction", JSONObject().apply {
+                put("systemInstruction", JSONObject().apply {
                     put("parts", JSONArray().put(JSONObject().put("text", systemPrompt)))
                 })
-                put("generation_config", JSONObject().apply {
-                    put("response_modalities", JSONArray().put("AUDIO"))
-                    put("speech_config", JSONObject().apply {
-                        put("voice_config", JSONObject().apply {
-                            put("prebuilt_voice_config", JSONObject().put("voice_name", voice))
+                put("generationConfig", JSONObject().apply {
+                    put("responseModalities", JSONArray().put("AUDIO"))
+                    put("speechConfig", JSONObject().apply {
+                        put("voiceConfig", JSONObject().apply {
+                            put("prebuiltVoiceConfig", JSONObject().put("voiceName", voice))
                         })
                     })
                     put("temperature", 0.9)
                 })
-                put("output_audio_transcription", JSONObject())
-                put("input_audio_transcription", JSONObject())
+                put("outputAudioTranscription", JSONObject())
+                put("inputAudioTranscription", JSONObject())
             }
             put("setup", setup)
         }
@@ -105,9 +105,9 @@ class GeminiLiveClient(
         if (!isConnected) return
         val base64Data = Base64.encodeToString(data, Base64.NO_WRAP)
         val audioMsg = JSONObject().apply {
-            put("realtime_input", JSONObject().apply {
-                put("media_chunks", JSONArray().put(JSONObject().apply {
-                    put("mime_type", "audio/pcm;rate=16000")
+            put("realtimeInput", JSONObject().apply {
+                put("mediaChunks", JSONArray().put(JSONObject().apply {
+                    put("mimeType", "audio/pcm;rate=16000")
                     put("data", base64Data)
                 }))
             })
@@ -118,12 +118,12 @@ class GeminiLiveClient(
     fun sendText(message: String) {
         if (!isConnected) return
         val textMsg = JSONObject().apply {
-            put("client_content", JSONObject().apply {
+            put("clientContent", JSONObject().apply {
                 put("turns", JSONArray().put(JSONObject().apply {
                     put("role", "user")
                     put("parts", JSONArray().put(JSONObject().put("text", message)))
                 }))
-                put("turn_complete", true)
+                put("turnComplete", true)
             })
         }
         webSocket?.send(textMsg.toString())
@@ -131,9 +131,9 @@ class GeminiLiveClient(
 
     fun interrupt() {
         val interruptMsg = JSONObject().apply {
-            put("client_content", JSONObject().apply {
+            put("clientContent", JSONObject().apply {
                 put("turns", JSONArray())
-                put("turn_complete", true)
+                put("turnComplete", true)
             })
         }
         webSocket?.send(interruptMsg.toString())

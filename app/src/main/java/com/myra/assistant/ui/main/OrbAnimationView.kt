@@ -47,9 +47,11 @@ class OrbAnimationView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (width <= 0 || height <= 0) return
         val cx = width / 2f
         val cy = height / 2f
         val radius = (width.coerceAtMost(height) / 3f) * pulseScale
+        if (radius <= 0f) return
 
         val colorStart = when (currentState) {
             State.IDLE -> Color.parseColor("#B71C1C")
