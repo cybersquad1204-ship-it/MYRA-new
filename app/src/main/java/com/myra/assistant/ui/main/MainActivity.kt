@@ -122,6 +122,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var lastApiKey: String? = null
+
     private fun initSystem() {
         startService(Intent(this, CallMonitorService::class.java))
         startOverlayServiceIfPermitted()
@@ -132,8 +134,27 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        connectToGemini()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::binding.isInitialized) {
+            val prefs = getSharedPreferences("myra_prefs", Context.MODE_PRIVATE)
+            val currentKey = prefs.getString("api_key", "") ?: ""
+            if (lastApiKey != null && lastApiKey != currentKey) {
+                // Settings changed while app was in background — reconnect with fresh values
+                geminiClient?.disconnect()
+                audioEngine?.release()
+                connectToGemini()
+            }
+        }
+    }
+
+    private fun connectToGemini() {
         val prefs = getSharedPreferences("myra_prefs", Context.MODE_PRIVATE)
         val apiKey = prefs.getString("api_key", "YOUR_GEMINI_API_KEY") ?: ""
+        lastApiKey = apiKey
         val model = prefs.getString("gemini_model", "models/gemini-3.1-flash-live-preview") ?: ""
         val voice = prefs.getString("gemini_voice", "Aoede") ?: "Aoede"
         val name = prefs.getString("user_name", "Boss") ?: "Boss"
@@ -154,6 +175,7 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     binding.orbView.setState(OrbAnimationView.State.SPEAKING)
                     binding.statusText.text = "Bol rahi hoon..."
+                    binding.micStatusLabel.text = "SPEAKING"
                     binding.redOverlay.animate().alpha(0.08f).setDuration(300).start()
                 }
             },
@@ -161,6 +183,7 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     binding.orbView.setState(OrbAnimationView.State.LISTENING)
                     binding.statusText.text = "Sun rahi hoon..."
+                    binding.micStatusLabel.text = "LISTENING"
                     binding.redOverlay.animate().alpha(0f).setDuration(500).start()
                 }
             }
