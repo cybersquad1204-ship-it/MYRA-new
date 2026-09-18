@@ -108,7 +108,13 @@ class AudioEngine(
                         isMyraSpeaking = false
                         onSpeakingStopped()
                     }
-                    Thread.sleep(10)
+                    try {
+                        Thread.sleep(10)
+                    } catch (e: InterruptedException) {
+                        // Thread was interrupted (e.g. release() called) — exit loop cleanly
+                        Thread.currentThread().interrupt()
+                        return@Thread
+                    }
                 }
             }
         }.apply { start() }
