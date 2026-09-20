@@ -25,8 +25,19 @@
             android:hint="Gemini API Key"
             android:textColor="#FFFFFF"
             android:textColorHint="#555555"
-            android:inputType="textPassword"
+            android:inputType="textVisiblePassword"
+            android:selectAllOnFocus="true"
             android:layout_marginTop="20dp" />
+
+        <Button
+            android:id="@+id/clearApiKeyBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear key field"
+            android:textAllCaps="false"
+            android:textColor="#FF8FB3"
+            android:background="@android:color/transparent"
+            android:layout_marginTop="4dp" />
 
         <EditText
             android:id="@+id/userNameInput"

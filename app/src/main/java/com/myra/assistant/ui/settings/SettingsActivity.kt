@@ -49,6 +49,11 @@ class SettingsActivity : AppCompatActivity() {
         binding.apiKeyInput.setText(prefs.getString("api_key", ""))
         binding.userNameInput.setText(prefs.getString("user_name", "Boss"))
 
+        binding.clearApiKeyBtn.setOnClickListener {
+            binding.apiKeyInput.setText("")
+            binding.apiKeyInput.requestFocus()
+        }
+
         setupModelSpinner()
         setupVoiceSpinner()
         setupPersonalityGroup()
