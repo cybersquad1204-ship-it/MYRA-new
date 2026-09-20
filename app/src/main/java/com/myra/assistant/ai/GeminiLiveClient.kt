@@ -55,9 +55,9 @@ class GeminiLiveClient(
             override fun onOpen(ws: WebSocket, response: Response) {
                 isConnected = true
                 sendSetupMessage()
-                handler.post(keepAliveRunnable)
-                handler.postDelayed(sessionRenewRunnable, 540000)
-                listener.onConnected()
+                // Don't start sending audio/keepalive chunks or notify "connected"
+                // until the server confirms setupComplete — sending anything before
+                // that causes Google's server to silently drop the connection.
             }
 
             override fun onMessage(ws: WebSocket, text: String) {
@@ -147,6 +147,15 @@ class GeminiLiveClient(
     private fun handleIncomingMessage(text: String) {
         try {
             val json = JSONObject(text)
+
+            if (json.has("setupComplete")) {
+                // Server has acknowledged setup — now it's safe to send audio/keepalive
+                handler.post(keepAliveRunnable)
+                handler.postDelayed(sessionRenewRunnable, 540000)
+                listener.onConnected()
+                return
+            }
+
             if (json.has("serverContent")) {
                 val serverContent = json.getJSONObject("serverContent")
 
