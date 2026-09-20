@@ -160,6 +160,14 @@ class MainActivity : AppCompatActivity() {
         val name = prefs.getString("user_name", "Boss") ?: "Boss"
         val personality = prefs.getString("personality_mode", "GF") ?: "GF"
 
+        // TEMP DEBUG: show last 6 chars of the key actually being used, and the model name
+        val keyTail = if (apiKey.length >= 6) apiKey.takeLast(6) else apiKey
+        android.widget.Toast.makeText(
+            this,
+            "DEBUG: key ends '$keyTail' (len ${apiKey.length}), model=$model",
+            android.widget.Toast.LENGTH_LONG
+        ).show()
+
         val personalityBlock = when (personality) {
             "PROFESSIONAL" -> "Speak formal English only. Be precise and efficient, no emojis, max 2 sentences."
             "ASSISTANT" -> "Speak friendly Hinglish or English, balanced and helpful, max 2-3 sentences."
@@ -234,7 +242,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onError(error: String) {
-                runOnUiThread { Toast.makeText(this@MainActivity, error, Toast.LENGTH_SHORT).show() }
+                runOnUiThread { Toast.makeText(this@MainActivity, error, Toast.LENGTH_LONG).show() }
             }
         })
 
