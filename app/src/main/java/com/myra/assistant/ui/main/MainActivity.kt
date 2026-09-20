@@ -76,6 +76,18 @@ class MainActivity : AppCompatActivity() {
             toggleListening()
         }
 
+        binding.sendBtn.setOnClickListener {
+            sendTypedMessage()
+        }
+        binding.messageInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEND) {
+                sendTypedMessage()
+                true
+            } else {
+                false
+            }
+        }
+
         val filter = IntentFilter("com.myra.CALL_ENDED")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(callEndedReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
@@ -160,7 +172,9 @@ class MainActivity : AppCompatActivity() {
 
         // TEMP DEBUG: show last 6 chars of the key actually being used, and the model name
         val keyTail = if (apiKey.length >= 6) apiKey.takeLast(6) else apiKey
-        binding.statusText.text = "DEBUG key-end:$keyTail len:${apiKey.length} model:$model"
+        chatAdapter.addMessage(
+            ChatMessage("DEBUG key-end:$keyTail len:${apiKey.length} model:$model", false)
+        )
 
         val personalityBlock = when (personality) {
             "PROFESSIONAL" -> "Speak formal English only. Be precise and efficient, no emojis, max 2 sentences."
@@ -245,6 +259,17 @@ class MainActivity : AppCompatActivity() {
         })
 
         geminiClient?.connect()
+    }
+
+    private fun sendTypedMessage() {
+        val text = binding.messageInput.text?.toString()?.trim()
+        if (text.isNullOrEmpty()) return
+        chatAdapter.addMessage(ChatMessage(text, true))
+        geminiClient?.sendText(text)
+        binding.messageInput.text?.clear()
+        // Hide keyboard after sending
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(binding.messageInput.windowToken, 0)
     }
 
     private fun toggleListening() {
