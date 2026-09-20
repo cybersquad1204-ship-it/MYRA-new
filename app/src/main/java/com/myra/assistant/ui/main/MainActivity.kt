@@ -72,10 +72,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        binding.micButton.setOnLongClickListener {
-            audioEngine?.clearPlaybackQueue()
-            geminiClient?.interrupt()
-            true
+        binding.orbView.setOnClickListener {
+            toggleListening()
         }
 
         val filter = IntentFilter("com.myra.CALL_ENDED")
@@ -162,11 +160,7 @@ class MainActivity : AppCompatActivity() {
 
         // TEMP DEBUG: show last 6 chars of the key actually being used, and the model name
         val keyTail = if (apiKey.length >= 6) apiKey.takeLast(6) else apiKey
-        android.widget.Toast.makeText(
-            this,
-            "DEBUG: key ends '$keyTail' (len ${apiKey.length}), model=$model",
-            android.widget.Toast.LENGTH_LONG
-        ).show()
+        binding.statusText.text = "DEBUG key-end:$keyTail len:${apiKey.length} model:$model"
 
         val personalityBlock = when (personality) {
             "PROFESSIONAL" -> "Speak formal English only. Be precise and efficient, no emojis, max 2 sentences."
@@ -183,15 +177,18 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     binding.orbView.setState(OrbAnimationView.State.SPEAKING)
                     binding.statusText.text = "Bol rahi hoon..."
-                    binding.micStatusLabel.text = "SPEAKING"
                     binding.redOverlay.animate().alpha(0.08f).setDuration(300).start()
                 }
             },
             onSpeakingStopped = {
                 runOnUiThread {
-                    binding.orbView.setState(OrbAnimationView.State.LISTENING)
-                    binding.statusText.text = "Sun rahi hoon..."
-                    binding.micStatusLabel.text = "LISTENING"
+                    if (audioEngine?.isRecording == true) {
+                        binding.orbView.setState(OrbAnimationView.State.LISTENING)
+                        binding.statusText.text = "Sun rahi hoon..."
+                    } else {
+                        binding.orbView.setState(OrbAnimationView.State.IDLE)
+                        binding.statusText.text = "Tap karke bolo"
+                    }
                     binding.redOverlay.animate().alpha(0f).setDuration(500).start()
                 }
             }
@@ -200,8 +197,9 @@ class MainActivity : AppCompatActivity() {
         geminiClient = GeminiLiveClient(this, apiKey, model, voice, prompt, object : GeminiLiveClient.Listener {
             override fun onConnected() {
                 runOnUiThread {
-                    audioEngine?.startRecording()
                     audioEngine?.startPlayback()
+                    binding.orbView.setState(OrbAnimationView.State.IDLE)
+                    binding.statusText.text = "Tap karke bolo"
                     binding.waveformView.startAnimation()
                     val greeting = when (personality) {
                         "PROFESSIONAL" -> "Good day $name. MYRA is online and ready to assist you."
@@ -247,6 +245,24 @@ class MainActivity : AppCompatActivity() {
         })
 
         geminiClient?.connect()
+    }
+
+    private fun toggleListening() {
+        val engine = audioEngine ?: return
+        if (engine.isRecording) {
+            engine.stopRecording()
+            binding.orbView.setState(OrbAnimationView.State.IDLE)
+            binding.statusText.text = "Tap karke bolo"
+        } else {
+            // Tapping while MYRA is speaking also interrupts her
+            if (engine.isMyraSpeaking) {
+                audioEngine?.clearPlaybackQueue()
+                geminiClient?.interrupt()
+            }
+            engine.startRecording()
+            binding.orbView.setState(OrbAnimationView.State.LISTENING)
+            binding.statusText.text = "Sun rahi hoon..."
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -120,6 +120,15 @@ class AudioEngine(
         }.apply { start() }
     }
 
+    fun stopRecording() {
+        if (!isRecording) return
+        isRecording = false
+        audioRecord?.stop()
+        audioRecord?.release()
+        audioRecord = null
+        recordThread = null
+    }
+
     fun queueAudio(data: ByteArray) {
         audioQueue.offer(data)
     }
